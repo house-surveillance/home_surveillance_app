@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "729563342064",
+    "project_id": "home-surveillance-77b2e",
+    "storage_bucket": "home-surveillance-77b2e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729563342064:android:1ff06220d23b075bcece35",
+        "android_client_info": {
+          "package_name": "com.example.home_surveillance_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkKzfWGk9ahxlVadiJP1BgNR25mBABxYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
