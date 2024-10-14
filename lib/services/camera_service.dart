@@ -7,7 +7,7 @@ class CameraService {
     final cameras = await availableCameras();
     controller = CameraController(
       cameras[0],
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
     );
     await controller!.initialize();
   }

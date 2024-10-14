@@ -5,6 +5,7 @@ class User {
   final String? id;
   final String userName;
   final String email;
+  final String? fcmToken;
   final String? password;
   final List<String> roles;
   final ProfileModel? profile;
@@ -16,6 +17,7 @@ class User {
     required this.userName,
     required this.email,
     this.password,
+    this.fcmToken,
     required this.roles,
     this.profile,
     this.face,
@@ -33,6 +35,7 @@ class User {
       userName: json['userName'] ?? 'Unknown',
       email: json['email'] ?? 'No Email',
       password: json['password'],
+      fcmToken: json['fcmToken'] ?? '.',
       roles: rolesList,
       profile: json['profile'] != null
           ? ProfileModel.fromJson(json['profile'])

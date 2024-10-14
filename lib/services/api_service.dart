@@ -5,25 +5,50 @@ import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  //http://192.168.123.42:3000/api/v1
+  //http://192.168.123:3000/api/v1
   //http://localhost:3000/api/v1
-  final String baseUrl = 'https://f4c4-38-253-80-143.ngrok-free.app/api/v1';
+  final String baseUrl = 'http://192.168.18.5:3000/api/v1';
 
   Future<dynamic> fetchData(String endpoint) async {
-    final response = await http.get(Uri.parse('$baseUrl/$endpoint'));
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Failed to load data');
+    print('Endpoint: $endpoint');
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          // Otros headers si los necesitas
+        },
+      );
+
+      // Verificar el código de estado
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          // Decodificar solo si la respuesta no está vacía
+          return json.decode(response.body);
+        } else {
+          // Manejo para respuesta vacía
+          return null;
+        }
+      } else {
+        // Manejo de errores por código de estado
+        print('Error: Received status code ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      // Manejo de excepciones
+      print('Error durante la solicitud GET: $e');
+      return false;
     }
   }
 
-  Future<dynamic> postData(String endpoint, Map<String, dynamic> data) async {
 
+  Future<dynamic> postData(String endpoint, Map<String, dynamic> data) async {
     final response = await http.post(
       Uri.parse('$baseUrl/$endpoint'),
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       },
       body: json.encode(data),
     );
@@ -38,6 +63,8 @@ class ApiService {
     var request = http.MultipartRequest(
         'POST', Uri.parse('$baseUrl/recognition/register-face'));
 
+    request.headers.addAll({'ngrok-skip-browser-warning': 'true'});
+
     request.fields['userID'] = userID;
     for (var photo in userPhotos) {
       var mimeType = lookupMimeType(photo.path)!.split('/');
@@ -51,7 +78,6 @@ class ApiService {
 
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
-
 
     if (response.statusCode == 201) {
       return true;

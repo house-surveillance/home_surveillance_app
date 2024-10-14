@@ -59,10 +59,8 @@ class NotificationsScreenState extends State<NotificationsScreen> {
 
       handleNotifications(users);
     } catch (error) {
-      // Handle error appropriately here
-      print('Error fetching users: $error');
+      //print('Error fetching users: $error');
     }
-    // Simulated user data
   }
 
   void handleNotifications(List<NotificationModel> users) {
@@ -111,8 +109,6 @@ class NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final message = ModalRoute.of(context)!.settings.arguments;
-    print('message');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),

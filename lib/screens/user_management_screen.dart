@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
-import '../utils/validations_util.dart';
 import '../widgets/validation_dialog.dart';
-import '../models/profile_model.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import '../models/user_model.dart';
@@ -21,10 +19,13 @@ class UserManagementScreen extends StatefulWidget {
 
 class UserManagementScreenState extends State<UserManagementScreen> {
   late Future<List<User>> users;
-  final List<String> roles = ["SUPERVISOR"];
+  final List<String> roles = ["RESIDENT"];
   XFile? _selectedUserPhoto;
   List<XFile> _userPhotos = [];
+  final List<String> _allowedExtensions = ['jpg', 'jpeg', 'png'];
+  final ImagePicker _picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
+
 
   @override
   void initState() {
@@ -32,24 +33,113 @@ class UserManagementScreenState extends State<UserManagementScreen> {
     users = fetchUsers();
   }
 
-  Future<List<User>> fetchUsers() async {
-    final apiService = Provider.of<ApiService>(context, listen: false);
-    final response = await apiService.fetchData('users');
-    return (response as List).map((data) => User.fromJson(data)).toList();
+  Future<void> _pickImage(ImageSource source, setState) async {
+    try {
+      final XFile? photo = await _picker.pickImage(source: source);
+
+      if (photo != null) {
+        String extension = photo.path.split('.').last.toLowerCase();
+        if (_allowedExtensions.contains(extension)) {
+          if (_userPhotos.length < 4) {
+            setState(() {
+              _userPhotos.add(photo);
+            });
+          } else {
+            _showSnackBar('Only 4 images are required.');
+          }
+        } else {
+          _showSnackBar('Unsupported image type. try JPG or PNG.');
+        }
+      }
+    } catch (e) {
+      _showSnackBar('Error selecting the image: $e');
+
+    }
   }
 
+  Future<void> _pickImageUser(Function setState) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _selectedUserPhoto = image;
+    });
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  /*
+  Future<List<User>> fetchUsers() async {
+  final apiService = Provider.of<ApiService>(context, listen: false);
+
+  final prefs = await SharedPreferences.getInstance();
+  String? userId = prefs.getString('userId');
+
+  final response = await apiService.fetchData('users/${userId ?? ''}');
+
+  // Imprimir la respuesta para depuración
+  print('Response: $response');
+
+  if (response is List) {
+    final users = response.map((data) => User.fromJson(data)).toList();
+
+    // Imprimir la lista de usuarios
+    print('Users: $users');
+
+    return users;
+  } else {
+    throw Exception('Unexpected response type');
+  }
+}
+   */
+  Future<List<User>> fetchUsers() async {
+    final apiService = Provider.of<ApiService>(context, listen: false);
+
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+
+    // Asegúrate de que `userId` no sea nulo o vacío antes de llamar a la API
+    final endpoint = userId != null && userId.isNotEmpty ? 'users/$userId' : 'users';
+
+    // Llamada al servicio API
+    final response = await apiService.fetchData(endpoint);
+
+    // Imprimir la respuesta para depuración
+    print('Response: $response');
+
+    if (response != null && response is List) {
+      final users = response.map((data) => User.fromJson(data)).toList();
+
+      // Imprimir la lista de usuarios para depuración
+      print('Users: $users');
+
+      return users;
+    } else if (response == false) {
+      throw Exception('Failed to fetch users from the API');
+    } else {
+      throw Exception('Unexpected response type');
+    }
+  }
+
+
   Future<void> addUser(BuildContext context, String userName, String email,
-      String password, String roles, String fullName) async {
+      String password, String roles, String fullName, String residenceName,String residenceAddress) async {
     final authService = Provider.of<AuthService>(context, listen: false);
 
     List<String> userRoles =
         roles.split(',').map((role) => role.trim()).toList();
 
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+
     final result = await authService.registerUser(
-        email, password, userName, fullName, userRoles, _selectedUserPhoto);
+        email, password, userName, fullName, userRoles, _selectedUserPhoto,residenceName, residenceAddress,userId);
 
     if (!result['ok']) {
-      print('error in adding user in user management screen');
+      //print('error in adding user in user management screen');
     }
     List<User> updatedUsers = await fetchUsers();
 
@@ -136,31 +226,14 @@ class UserManagementScreenState extends State<UserManagementScreen> {
                     ElevatedButton.icon(
                       icon: const Icon(Icons.camera_alt),
                       label: const Text('Take Photo'),
-                      onPressed: () async {
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? photo =
-                            await picker.pickImage(source: ImageSource.camera);
-                        if (photo != null && _userPhotos.length < 4) {
-                          setState(() {
-                            _userPhotos.add(photo);
-                          });
-                        }
-                      },
+                      onPressed: () => _pickImage(ImageSource.camera, setState),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.photo_library),
                       label: const Text('Select from gallery'),
-                      onPressed: () async {
-                        final ImagePicker picker = ImagePicker();
-                        final XFile? photo =
-                            await picker.pickImage(source: ImageSource.gallery);
-                        if (photo != null && _userPhotos.length < 4) {
-                          setState(() {
-                            _userPhotos.add(photo);
-                          });
-                        }
-                      },
+                      onPressed: () =>
+                          _pickImage(ImageSource.gallery, setState),
                     ),
                   ],
                 ),
@@ -191,20 +264,14 @@ class UserManagementScreenState extends State<UserManagementScreen> {
     //_selectedUserPhoto = null;
   }
 
-  Future<void> _pickImage(Function setState) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      _selectedUserPhoto = image;
-    });
-  }
-
   void _showAddUserDialog() async {
     String? userName;
     String? userEmail;
     String? password;
     String? userRoles;
     String? userFullName;
+    String? residenceName;
+    String? residenceAddress;
     String? imageError;
 
     await showDialog(
@@ -298,6 +365,34 @@ class UserManagementScreenState extends State<UserManagementScreen> {
                           },
                         ),
                         const SizedBox(height: 20),
+                        TextFormField(
+                          decoration:
+                          const InputDecoration(labelText: 'Residence Name'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the Residence Name';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            residenceName = value;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          decoration:
+                          const InputDecoration(labelText: 'Residence Address'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the Residence Address';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            residenceAddress = value;
+                          },
+                        ),
+                        const SizedBox(height: 20),
                         _selectedUserPhoto != null
                             ? SizedBox(
                                 width: 150,
@@ -336,7 +431,7 @@ class UserManagementScreenState extends State<UserManagementScreen> {
                           icon: const Icon(Icons.photo_library),
                           label: const Text('Select from Gallery'),
                           onPressed: () async {
-                            await _pickImage(setState);
+                            await _pickImageUser(setState);
                             setState(() {
                               imageError = null;
                             });
@@ -354,7 +449,6 @@ class UserManagementScreenState extends State<UserManagementScreen> {
                     setState(() {
                       _selectedUserPhoto = null;
                     });
-                    print(_selectedUserPhoto);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -376,6 +470,8 @@ class UserManagementScreenState extends State<UserManagementScreen> {
                         password ?? '',
                         userRoles ?? '',
                         userFullName ?? '',
+                        residenceName ?? '',
+                        residenceAddress ?? ''
                       );
                       Navigator.of(context).pop();
                       setState(() {

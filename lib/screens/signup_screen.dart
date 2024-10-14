@@ -21,6 +21,8 @@ class SignupScreenState extends State<SignupScreen> {
   String? selectedRole;
   XFile? _selectedImage;
   final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController residenceNameController = TextEditingController();
+  final TextEditingController residenceAddressController = TextEditingController();
 
   bool _obscureText = true;
 
@@ -37,6 +39,8 @@ class SignupScreenState extends State<SignupScreen> {
     final password = passwordController.text;
     final userName = userNameController.text;
     final fullName = fullNameController.text;
+    final residenceName = residenceNameController.text;
+    final residenceAddress = residenceAddressController;
     List<String> userRoles = ["ADMIN"];
 
     Map<String, dynamic> fields = {
@@ -45,6 +49,8 @@ class SignupScreenState extends State<SignupScreen> {
       "UserName": userName,
       "FullName": fullName,
       "Image Profile": _selectedImage,
+      "Residence Name": residenceName,
+      "Residence Address": residenceAddress
     };
 
     Map<String, ValidationRule> rules = {
@@ -53,6 +59,8 @@ class SignupScreenState extends State<SignupScreen> {
       "UserName": (value) => value.isNotEmpty,
       "FullName": (value) => value.isNotEmpty,
       "Image Profile": (value) => value != null,
+      "Residence Name":  (value) => value.isNotEmpty,
+      "Residence Address":  (value) => value.isNotEmpty
     };
 
     String? missingFields = validateFields(fields, rules);
@@ -67,7 +75,7 @@ class SignupScreenState extends State<SignupScreen> {
     }
 
     final result = await authService.registerUser(
-        email, password, userName, fullName, userRoles, _selectedImage);
+        email, password, userName, fullName, userRoles, _selectedImage, residenceName, residenceAddress,'0');
 
     if (!mounted) return;
     if (result['ok']) {
@@ -227,6 +235,28 @@ class SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
+                    /*Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        controller: residenceNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'residence name',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        controller: residenceAddressController,
+                        decoration: const InputDecoration(
+                          labelText: 'residence address',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),*/
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: SizedBox(

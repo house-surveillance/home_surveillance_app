@@ -7,14 +7,13 @@ import 'services/api_service.dart';
 import 'services/camera_service.dart';
 import 'package:provider/provider.dart';
 import 'screens/notifications_screen.dart';
-import 'services/firebase_api.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await FirebaseApi().initNotifications();
+  //await FirebaseApi().initNotifications();
   runApp(const MyApp());
 }
 

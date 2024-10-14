@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -7,16 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 
+
 class AuthService extends ChangeNotifier {
-  //'http://192.168.1.100:3000/api/v1/auth';
+  //'http://192.168.18.5:3000/api/v1/auth';
   //'http://localhost:3000/api/v1/auth';
-  final String baseUrl = 'https://f4c4-38-253-80-143.ngrok-free.app/api/v1/auth';
+  final String baseUrl = 'http://192.168.18.5:3000/api/v1/auth';
 
   Future<bool> login(String email, String password) async {
     try {
-      print("Iniciando la solicitud al servidor...");
-      print(baseUrl);
-
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {
@@ -26,13 +23,12 @@ class AuthService extends ChangeNotifier {
         body: json.encode({'email': email, 'password': password}),
       );
 
-      print('pene: ${response.body}');
-
       if (response.statusCode == 201) {
         final responseData = json.decode(response.body);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', responseData['token']);
         await prefs.setString('userId', responseData['id'].toString());
+        //FireBase notifications initialization
 
         return true;
       } else {
@@ -76,12 +72,15 @@ class AuthService extends ChangeNotifier {
   */
 
   Future<Map<String, dynamic>> registerUser(
-    String email,
+      String email,
     String password,
     String userName,
     String fullName,
     List<String> userRoles,
     XFile? imageProfile,
+      residenceName,
+      residenceAddress,
+      creatorId
   ) async {
     try {
       var request =
@@ -91,6 +90,7 @@ class AuthService extends ChangeNotifier {
       request.fields['password'] = password;
       request.fields['userName'] = userName;
       request.fields['fullName'] = fullName;
+      request.fields['creatorId'] = creatorId;
       request.fields['roles'] = userRoles.join(',');
 
       if (imageProfile != null) {
@@ -107,7 +107,6 @@ class AuthService extends ChangeNotifier {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201) {
-        print('Response data: ${response.body}');
         Map<String, dynamic> result = {
           'message': 'something went wrong',
           'ok': true,
@@ -115,7 +114,6 @@ class AuthService extends ChangeNotifier {
         };
         return result;
       } else {
-        print('Error: ${response.statusCode}, ${response.body}');
         Map<String, dynamic> result = {
           'message': 'Error: ${response.statusCode}, ${response.body}',
           'ok': false,

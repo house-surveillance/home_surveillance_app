@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:home_surveillance_app/services/firebase_api.dart';
 import '../utils/validations_util.dart';
 import '../widgets/validation_dialog.dart';
 import 'package:provider/provider.dart';
@@ -48,36 +49,43 @@ class LoginScreenState extends State<LoginScreen> {
     String? missingFields = validateFields(fields, rules);
 
     if (missingFields != null) {
-      ValidationDialog(
-        title: 'Missing fields',
-        content: 'Please, complete the following fields: $missingFields.',
-        textButton: 'Ok',
-      ).show(context);
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        ValidationDialog(
+          title: 'Missing fields',
+          content: 'Please, complete the following fields: $missingFields.',
+          textButton: 'Ok',
+        ).show(context);
+        setState(() {
+          _isLoading = false;
+        });
+      }
       return;
     }
 
     final success = await authService.login(email, password);
 
-    print('pinga ${success}');
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
-    if (!mounted) return;
 
     if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const UserManagementScreen()),
-      );
+      await FirebaseApi().initNotifications(context);
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserManagementScreen()),
+        );
+      }
     } else {
-      const ValidationDialog(
-        title: 'Login Failed',
-        content: 'Invalid email or password.',
-        textButton: 'Ok',
-      ).show(context);
+      if (mounted) {
+        const ValidationDialog(
+          title: 'Login Failed',
+          content: 'Invalid email or password.',
+          textButton: 'Ok',
+        ).show(context);
+      }
     }
   }
 
