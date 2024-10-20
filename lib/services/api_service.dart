@@ -5,7 +5,7 @@ import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 
 class ApiService {
-  //http://192.168.123:3000/api/v1
+  //http://192.168.18.5:3000/api/v1
   //http://localhost:3000/api/v1
   final String baseUrl = 'http://192.168.18.5:3000/api/v1';
 
