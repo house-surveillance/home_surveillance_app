@@ -10,7 +10,7 @@ import 'package:http_parser/http_parser.dart';
 class AuthService extends ChangeNotifier {
   //'http://192.168.18.5:3000/api/v1/auth';
   //'http://localhost:3000/api/v1/auth';
-  final String baseUrl = 'http://192.168.18.5:3000/api/v1/auth';
+  final String baseUrl = 'https://065f-38-253-146-9.ngrok-free.app/api/v1/auth';
 
   Future<bool> login(String email, String password) async {
     try {
@@ -92,6 +92,10 @@ class AuthService extends ChangeNotifier {
       request.fields['fullName'] = fullName;
       request.fields['creatorId'] = creatorId;
       request.fields['roles'] = userRoles.join(',');
+      request.fields['residenceName'] = residenceName;
+      request.fields['residenceAddress'] = userName;
+
+
 
       if (imageProfile != null) {
         var mimeType = lookupMimeType(imageProfile.path)!.split('/');

@@ -7,7 +7,7 @@ import 'package:http_parser/http_parser.dart';
 class ApiService {
   //http://192.168.18.5:3000/api/v1
   //http://localhost:3000/api/v1
-  final String baseUrl = 'http://192.168.18.5:3000/api/v1';
+  final String baseUrl = 'https://065f-38-253-146-9.ngrok-free.app/api/v1';
 
   Future<dynamic> fetchData(String endpoint) async {
     print('Endpoint: $endpoint');

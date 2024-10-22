@@ -17,7 +17,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     // Iniciando el controlador con el ID del video de YouTube
     _controller = YoutubePlayerController(
-      initialVideoId: YoutubePlayer.convertUrlToId('https://www.youtube.com/watch?v=-u8B4IpOgM8&ab_channel=MR.PON-Topic')!,
+      initialVideoId: YoutubePlayer.convertUrlToId('https://www.youtube.com/watch?v=ZZlrGHerL4s')!,
       flags: const YoutubePlayerFlags(
         autoPlay: false,
         mute: false,

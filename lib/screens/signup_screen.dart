@@ -40,7 +40,7 @@ class SignupScreenState extends State<SignupScreen> {
     final userName = userNameController.text;
     final fullName = fullNameController.text;
     final residenceName = residenceNameController.text;
-    final residenceAddress = residenceAddressController;
+    final residenceAddress = residenceAddressController.text;
     List<String> userRoles = ["ADMIN"];
 
     Map<String, dynamic> fields = {
@@ -235,7 +235,7 @@ class SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    /*Padding(
+                    Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
                         controller: residenceNameController,
@@ -256,7 +256,7 @@ class SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),*/
+                    const SizedBox(height: 10),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: SizedBox(
